@@ -1,0 +1,60 @@
+name: Build Haunted Pumpkin ESP32
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'haunted-pumpkin/**'
+      - '.github/workflows/haunted-pumpkin-build.yml'
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PlatformIO and esptool
+        run: python -m pip install "platformio==6.1.18" "esptool==5.1.0"
+      - name: Test Halloween lighting effects
+        run: |
+          g++ -std=c++17 -Ihaunted-pumpkin/tests/stubs -Ihaunted-pumpkin/include \
+            haunted-pumpkin/tests/test_effects.cpp -o /tmp/pumpkin-effects
+          /tmp/pumpkin-effects
+      - name: Compile firmware for Ideaspark ESP32
+        run: pio run -d haunted-pumpkin -e ideaspark-esp32
+      - name: Assemble complete ESP32 flash image
+        run: |
+          set -eu
+          OUT=haunted-pumpkin/.pio/build/ideaspark-esp32
+          FRAMEWORK="$HOME/.platformio/packages/framework-arduinoespressif32"
+          BOOT_APP=$(find "$FRAMEWORK" -name boot_app0.bin -print -quit)
+          BOOTLOADER="$OUT/bootloader.bin"
+          if [ ! -f "$BOOTLOADER" ]; then
+            BOOTLOADER=$(find "$FRAMEWORK" -name bootloader_dio_40m.bin -print -quit)
+          fi
+          test -n "$BOOT_APP" && test -f "$BOOT_APP"
+          test -n "$BOOTLOADER" && test -f "$BOOTLOADER"
+          python -m esptool --chip esp32 merge-bin \
+            --flash-mode dio --flash-freq 40m --flash-size 4MB \
+            -o "$OUT/pumpkin-fx-full-flash.bin" \
+            0x1000 "$BOOTLOADER" \
+            0x8000 "$OUT/partitions.bin" \
+            0xe000 "$BOOT_APP" \
+            0x10000 "$OUT/firmware.bin"
+      - name: Upload complete first-flash image
+        uses: actions/upload-artifact@v4
+        with:
+          name: haunted-pumpkin-full-flash
+          path: haunted-pumpkin/.pio/build/ideaspark-esp32/pumpkin-fx-full-flash.bin
+          if-no-files-found: error
+      - name: Upload application-only firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: haunted-pumpkin-app-bin
+          path: haunted-pumpkin/.pio/build/ideaspark-esp32/firmware.bin
+          if-no-files-found: error
