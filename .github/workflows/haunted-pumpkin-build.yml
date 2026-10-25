@@ -10,7 +10,7 @@ jobs:
   firmware:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,3 +58,39 @@ jobs:
           name: haunted-pumpkin-app-bin
           path: haunted-pumpkin/.pio/build/ideaspark-esp32/firmware.bin
           if-no-files-found: error
+      - name: Publish direct-download firmware for Android
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="pumpkin-fx-latest"
+          OUT="haunted-pumpkin/.pio/build/ideaspark-esp32"
+          IMAGE="$OUT/pumpkin-fx-full-flash.bin"
+          APP="$OUT/firmware.bin"
+          sha256sum "$IMAGE" "$APP" > "$OUT/SHA256SUMS.txt"
+          cat > "$OUT/FLASH_FROM_ANDROID.txt" <<'TXT'
+          HAUNTED PUMPKIN - ANDROID FLASH
+          
+          1. Download pumpkin-fx-full-flash.bin from the GitHub release.
+          2. Connect the Ideaspark ESP32 to Android via USB-C data cable/OTG.
+          3. Open ESPFlash on Android and permit USB access.
+          4. Select ESP32, the downloaded .bin, and flash address 0x000000.
+          5. Press Flash and allow it to complete and verify.
+          6. Connect to Pumpkin-FX-Setup, then open http://192.168.4.1/setup
+          7. Paste Wi-Fi name/password and Sinric Pro credentials.
+          
+          NOTE: Firmware is CI-compiled but the board, display,
+          LED wiring and Google Home voice mode recognition still
+          require real-hardware verification. Disconnect the battery
+          supply when flashing from phone USB unless USB power isolation
+          has been confirmed.
+          TXT
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$IMAGE" "$APP" "$OUT/SHA256SUMS.txt" "$OUT/FLASH_FROM_ANDROID.txt" --clobber
+          else
+            gh release create "$TAG" "$IMAGE" "$APP" "$OUT/SHA256SUMS.txt" "$OUT/FLASH_FROM_ANDROID.txt" \
+              --title "Haunted Pumpkin: Android flash firmware" \
+              --target "$GITHUB_SHA" \
+              --notes "Compiled ESP32 firmware for the Ideaspark Haunted Pumpkin project. Download pumpkin-fx-full-flash.bin for an initial flash at address 0x000000. On-device validation and Google Home voice mode recognition are not yet verified. Configuration is completed on the device over Wi-Fi, no Wi-Fi credentials are embedded in firmware." \
+              --prerelease
+          fi
