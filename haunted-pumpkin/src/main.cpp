@@ -113,7 +113,7 @@ void publishModeIfDue(uint32_t now) {
   if (!modeReportPending || !cloudReady || !cloudLight || !SinricPro.isConnected()) return;
   if (uint32_t(now-lastModeReportAttempt) < 1200) return;
   lastModeReportAttempt = now;
-  if (cloudLight->sendModeEvent(String(CLOUD_MODE_INSTANCE), String(pumpkin::EFFECT_NAMES[selectedEffect]))) {
+  if (cloudLight->sendModeEvent(String(CLOUD_MODE_INSTANCE), String(pumpkin::EFFECT_NAMES[selectedEffect]), String("PHYSICAL_INTERACTION"))) {
     modeReportPending = false;
   }
 }
