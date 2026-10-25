@@ -1,0 +1,27 @@
+Haunted Pumpkin · Sinric Pro Mode values (enter one mode per line in the custom device template):
+
+Haunted Candle
+Twin Flames
+Dying Embers
+Hellfire
+Witch's Cauldron
+Ghostly Glow
+Lightning Storm
+Blood Moon
+Pumpkin Heartbeat
+Spectral Fade
+Possessed Flicker
+Toxic Bubbles
+Graveyard Mist
+Bat Swarm
+Jack-o'-Lantern
+Solid Orange
+Vampire Red
+Phantom Purple
+Candy Corn
+The Awakening
+
+Mode name: Effect
+InstanceId: pumpkin_effect
+Non Controllable: OFF
+Locale: English (US)

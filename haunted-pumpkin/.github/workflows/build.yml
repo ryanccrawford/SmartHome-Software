@@ -1,0 +1,53 @@
+name: Build Pumpkin Firmware
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'platformio.ini'
+      - 'src/**'
+      - 'include/**'
+      - '.github/workflows/build.yml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PlatformIO
+        run: pip install 'platformio==6.1.18' 'esptool==5.1.0' 
+      - name: Build for Ideaspark ESP32
+        run: pio run -e ideaspark-esp32
+      - name: Upload ESP32 application binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: pumpkin-firmware-app-bin
+          path: .pio/build/ideaspark-esp32/firmware.bin
+      - name: Assemble single all-in-one ESP32 flash image
+        shell: bash
+        run: |
+          set -eu
+          ELF_DIR=.pio/build/ideaspark-esp32
+          # boot_app0.bin is supplied by platform-espressif32's Arduino framework.
+          FRAMEWORK="$HOME/.platformio/packages/framework-arduinoespressif32"
+          BOOT_APP=$(find "$FRAMEWORK" -type f -name boot_app0.bin -print -quit)
+          BOOTLOADER="$ELF_DIR/bootloader.bin"
+          if [ ! -f "$BOOTLOADER" ]; then
+            BOOTLOADER=$(find "$FRAMEWORK" -type f -name bootloader_dio_40m.bin -print -quit)
+          fi
+          test -n "$BOOT_APP" && test -f "$BOOT_APP"
+          test -n "$BOOTLOADER" && test -f "$BOOTLOADER"
+          python -m esptool --chip esp32 merge-bin \
+            --flash-mode dio --flash-freq 40m --flash-size 4MB \
+            -o "$ELF_DIR/pumpkin-fx-full-flash.bin" \
+            0x1000 "$BOOTLOADER" \
+            0x8000 "$ELF_DIR/partitions.bin" \
+            0xe000 "$BOOT_APP" \
+            0x10000 "$ELF_DIR/firmware.bin"
+      - name: Upload full-flash image for Android OTG
+        uses: actions/upload-artifact@v4
+        with:
+          name: pumpkin-firmware-full-flash
+          path: .pio/build/ideaspark-esp32/pumpkin-fx-full-flash.bin
