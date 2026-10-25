@@ -76,7 +76,7 @@ jobs:
           3. Open ESPFlash on Android and permit USB access.
           4. Select ESP32, the downloaded .bin, and flash address 0x000000.
           5. Press Flash and allow it to complete and verify.
-          6. Connect to Pumpkin-FX-Setup, then open http://192.168.4.1/setup
+          6. Connect to Pumpkin-FX-Setup, then open http://192.168.77.1/setup
           7. Paste Wi-Fi name/password and Sinric Pro credentials.
           
           NOTE: Firmware is CI-compiled but the board, display,

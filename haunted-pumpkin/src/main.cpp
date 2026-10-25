@@ -282,7 +282,15 @@ void enterSetup() {
   if (setupMode) return;
   setupMode = true;
   WiFi.mode(WIFI_AP_STA);
-  WiFi.softAP("Pumpkin-FX-Setup",SETUP_AP_PASSWORD);
+  // Separate setup network from home routers (including 192.168.4.1).
+  const IPAddress setupIp(192, 168, 77, 1);
+  const IPAddress setupSubnet(255, 255, 255, 0);
+  if (!WiFi.softAPConfig(setupIp, setupIp, setupSubnet)) {
+    Serial.println("WARNING: Unable to configure the setup network IP");
+  }
+  if (!WiFi.softAP("Pumpkin-FX-Setup", SETUP_AP_PASSWORD)) {
+    Serial.println("ERROR: Failed to start Pumpkin-FX-Setup network");
+  }
   Serial.print("Setup AP ready, browse to http://");
   Serial.println(WiFi.softAPIP());
   screenOn(); drawScreen();

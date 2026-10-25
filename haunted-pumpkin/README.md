@@ -32,7 +32,7 @@
 1. **First flash the firmware** to the ESP32 once using USB and a compiled image (see build instructions below).
 2. Power the board. It advertises a Wi-Fi network named **`Pumpkin-FX-Setup`** if no Wi-Fi is configured.
 3. On your Android phone, connect to `Pumpkin-FX-Setup`, password **`PumpkinFX2026`**. Your phone may say **No internet**; choose **Stay connected**.
-4. Open **http://192.168.4.1/setup** in the phone browser.
+4. Open **http://192.168.77.1/setup** in the phone browser.
 5. Paste your home's **2.4 GHz** Wi-Fi SSID and password. You can paste your long password, with no repeated typing.
 6. Optionally add Sinric Pro App Key, App Secret and Light Device ID from the Sinric Pro portal, or leave blank if using local-only control. Tap **Save & Restart**.
 7. On Wi-Fi, find the ESP32's assigned IP from your router's device list (or serial log) and open `http://DEVICE_IP/` on the phone for effect selection.
@@ -55,7 +55,7 @@ The setup AP uses a known initial password from the code. Change it in `include/
    - **Non Controllable:** disabled / unchecked.
    - **Modes:** enter the **20 values**, one by one, from `GOOGLE_VOICE_MODES.txt`, in the same spelling. Google Home should then see the available lighting modes.
 5. Save the device template; create a **device using your new template** (not a stock Sinric Pro Light device). Give it a voice-friendly name: **Haunted Pumpkin**.
-6. Copy its **App Key**, **App Secret**, and **Device ID** into the phone setup form (hold BOOT for six seconds, reconnect to `Pumpkin-FX-Setup`, then visit http://192.168.4.1/setup). Tap Save and let it restart. You **do not** need to rebuild or re-flash.
+6. Copy its **App Key**, **App Secret**, and **Device ID** into the phone setup form (hold BOOT for six seconds, reconnect to `Pumpkin-FX-Setup`, then visit http://192.168.77.1/setup). Tap Save and let it restart. You **do not** need to rebuild or re-flash.
 7. In the **Google Home app**, open **Add → Device → Works with Google Home**, find **Sinric Pro**, link your account, and assign **Haunted Pumpkin** to a room.
 8. After linking, try these utterances:
    - “Hey Google, turn on Haunted Pumpkin.”
